@@ -118,17 +118,39 @@ if (!$config || !$id) {
 $apiKey = getEnvVar('API_KEY');
 $missingSheet = false;
 
-$configData = (strlen($config) === 86) ? fetchGoogleDocsData($config) : fetchGoogleSheetsData($config, $csheet, $apiKey);
-$idData = (strlen($id) === 86) ? fetchGoogleDocsData($id) : fetchGoogleSheetsData($id, $isheet, $apiKey);
+$configData = false;
+$idData = false;
+
+if (strlen($config) === 86) {
+    $configData = fetchGoogleDocsData($config);
+} elseif (strlen($config) === 44) {
+    $configData = fetchGoogleSheetsData($config, $csheet, $apiKey);
+} else {
+    if ($db) {
+        echo "// Invalid doc ID supplied ('config')\n";
+    }
+    exit;
+}
+
+if (strlen($id) === 86) {
+    $idData = fetchGoogleDocsData($id);
+} elseif (strlen($id) === 44) {
+    $idData = fetchGoogleSheetsData($id, $isheet, $apiKey);
+} else {
+    if ($db) {
+        echo "// Invalid doc ID supplied ('id')\n";
+    }
+    exit;
+}
 
 if ($db) {
-    if ($configData) echo "// DB:lookup : <" . str_replace($apiKey, "YOUR_API_KEY", $configData) . ">\n";
-    if ($idData) echo "// DB:lookup : <" . str_replace($apiKey, "YOUR_API_KEY", $idData) . ">\n";
+    if ($configData) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", "https://docs.google.com/spreadsheets/d/e/$config/pub?output=csv") . "\n";
+    if ($idData) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", "https://docs.google.com/spreadsheets/d/e/$id/pub?output=csv") . "\n";
 }
 
 if ($rc) {
-    if ($configData) echo "// RC:lookup : <" . json_encode($configData) . ">\n";
-    if ($idData) echo "// RC:lookup : <" . json_encode($idData) . ">\n";
+    if ($configData) echo "// RC:lookup : " . json_encode($configData) . "\n";
+    if ($idData) echo "// RC:lookup : " . json_encode($idData) . "\n";
 }
 
 if (is_array($configData) && isset($configData['missing_sheet'])) {
