@@ -1,4 +1,6 @@
 <?php
+header("Content-Type: text/plain");
+
 function getEnvVar($var) {
     return getenv($var);
 }
