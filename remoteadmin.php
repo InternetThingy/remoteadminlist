@@ -9,31 +9,31 @@ function fetchGoogleDocsData($identifier) {
     $url = "https://docs.google.com/spreadsheets/d/e/$identifier/pub?output=csv";
     $data = file_get_contents($url);
     if ($data === false) {
-        return false;
+        return [false, $url];
     }
-    return $data;
+    return [$data, $url];
 }
 
 function fetchGoogleSheetsData($identifier, $apiKey) {
     $url = "https://sheets.googleapis.com/v4/spreadsheets/$identifier?key=$apiKey";
     $jsonResponse = file_get_contents($url);
     if ($jsonResponse === false) {
-        return false;
+        return [false, $url];
     }
     $json = json_decode($jsonResponse, true);
     if (isset($json['sheets'][0]['properties']['title'])) {
-        return $json['sheets'][0]['properties']['title'];
+        return [$json['sheets'][0]['properties']['title'], $url];
     }
-    return false;
+    return [false, $url];
 }
 
 function fetchSheetValues($identifier, $sheet, $apiKey) {
     $url = "https://sheets.googleapis.com/v4/spreadsheets/$identifier/values/$sheet?key=$apiKey";
     $data = file_get_contents($url);
     if ($data === false) {
-        return false;
+        return [false, $url];
     }
-    return $data;
+    return [$data, $url];
 }
 
 function processConfigData($data) {
@@ -122,19 +122,21 @@ $missingSheet = false;
 
 $configData = false;
 $idData = false;
+$configUrl = '';
+$idUrl = '';
 
 if (strlen($config) === 86) {
-    $configData = fetchGoogleDocsData($config);
+    list($configData, $configUrl) = fetchGoogleDocsData($config);
 } elseif (strlen($config) === 44) {
     if (!$csheet) {
-        $csheet = fetchGoogleSheetsData($config, $apiKey);
+        list($csheet, $configUrl) = fetchGoogleSheetsData($config, $apiKey);
         if ($csheet === false) {
             echo "Failed to retrieve the sheet name for config.\n";
             exit;
         }
         $missingSheet = true;
     }
-    $configData = fetchSheetValues($config, $csheet, $apiKey);
+    list($configData, $configUrl) = fetchSheetValues($config, $csheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('config')\n";
@@ -143,17 +145,17 @@ if (strlen($config) === 86) {
 }
 
 if (strlen($id) === 86) {
-    $idData = fetchGoogleDocsData($id);
+    list($idData, $idUrl) = fetchGoogleDocsData($id);
 } elseif (strlen($id) === 44) {
     if (!$isheet) {
-        $isheet = fetchGoogleSheetsData($id, $apiKey);
+        list($isheet, $idUrl) = fetchGoogleSheetsData($id, $apiKey);
         if ($isheet === false) {
             echo "Failed to retrieve the sheet name for id.\n";
             exit;
         }
         $missingSheet = true;
     }
-    $idData = fetchSheetValues($id, $isheet, $apiKey);
+    list($idData, $idUrl) = fetchSheetValues($id, $isheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('id')\n";
@@ -162,8 +164,8 @@ if (strlen($id) === 86) {
 }
 
 if ($db) {
-    if ($configData) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", "https://docs.google.com/spreadsheets/d/e/$config/pub?output=csv") . "\n";
-    if ($idData) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", "https://docs.google.com/spreadsheets/d/e/$id/pub?output=csv") . "\n";
+    if ($configUrl) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", $configUrl) . "\n";
+    if ($idUrl) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", $idUrl) . "\n";
 }
 
 if ($rc) {
