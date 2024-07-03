@@ -13,12 +13,21 @@ function fetchGoogleDocsData($identifier) {
             "verify_peer_name" => false,
         ),
     );
-    $data = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
     $responseCode = $http_response_header[0] ?? 'No response code';
-    if ($data === false) {
+    if ($response === false) {
         return [false, $url, $responseCode];
     }
-    return [$data['values'], $url, $responseCode];
+    if(strstr($response, PHP_EOL)) {
+        $SplitByLine = explode(PHP_EOL, $response);
+        foreach( $SplitByLine as $number => $Line ) {
+            if(strstr($Line, ',')) {
+                $data[] = str_getcsv( $Line, ",", '"');
+            }
+            
+        }
+    }
+    return [$data, $url, $responseCode];
 }
 
 function fetchGoogleSheetsData($identifier, $apiKey) {
@@ -49,15 +58,17 @@ function fetchSheetValues($identifier, $sheet, $apiKey) {
             "verify_peer_name" => false,
         ),
     );
-    $data = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
     $responseCode = $http_response_header[0] ?? 'No response code';
     if ($data === false) {
         return [false, $url, $responseCode];
     }
-    return [$data['values'], $url, $responseCode];
+    $rawJSON = json_decode($response, true);
+    $data = $rawJSON['values'];
+    return [$data, $url, $responseCode];
 }
 
-function processConfigData($data) {
+function processConfigData($data, $id) {
     $lines = explode("\n", $data);
     array_shift($lines); // Remove the first line (headings)
     $spreadsheetIDs = [];
@@ -65,11 +76,13 @@ function processConfigData($data) {
     $groupData = '';
 
     foreach ($lines as $line) {
-        $line = str_getcsv($line);
-        if (count($line) < 3) continue;
-        $spreadsheetIDs[] = trim($line[0]);
-        $groups[] = trim($line[1]);
-        $groupData .= "Group=" . trim($line[1]) . ":" . trim($line[2]) . "\n";
+        if($id === $line[0]) {
+            $line = str_getcsv($line);
+            if (count($line) < 3) continue;
+            $spreadsheetIDs[] = trim($line[0]);
+            $groups[] = trim($line[1]);
+            $groupData .= "Group=" . trim($line[1]) . ":" . trim($line[2]) . "\n";
+        }
     }
 
     return [$spreadsheetIDs, $groups, $groupData];
@@ -185,6 +198,8 @@ if (strlen($id) === 86) {
     }
     exit;
 }
+var_dump($configData);
+var_dump($idData);
 
 if ($db) {
     if ($configUrl) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", $configUrl) . "\n";
@@ -196,7 +211,7 @@ if ($rc) {
     if ($idResponseCode) echo "// RC:lookup : $idResponseCode\n";
 }
 
-list($spreadsheetIDs, $groups, $groupData) = processConfigData($configData);
+list($spreadsheetIDs, $groups, $groupData) = processConfigData($configData, $id);
 list($userData, $adminCount, $failedCount, $failedLineNos) = processIDData($idData, $groups);
 
 if ($missingSheet) {
