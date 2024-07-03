@@ -14,17 +14,17 @@ function fetchGoogleDocsData($identifier) {
     return $data;
 }
 
-function fetchGoogleSheetsData($identifier, $sheet = null, $apiKey) {
+function fetchGoogleSheetsData($identifier, $apiKey) {
     $url = "https://sheets.googleapis.com/v4/spreadsheets/$identifier?key=$apiKey";
     $jsonResponse = file_get_contents($url);
     if ($jsonResponse === false) {
         return false;
     }
     $json = json_decode($jsonResponse, true);
-    if (isset($json['sheets'][0]['properties']['title']) && !$sheet) {
-        return ['missing_sheet' => true];
+    if (isset($json['sheets'][0]['properties']['title'])) {
+        return $json['sheets'][0]['properties']['title'];
     }
-    return $json;
+    return false;
 }
 
 function fetchSheetValues($identifier, $sheet, $apiKey) {
@@ -109,8 +109,8 @@ $config = $_GET['config'] ?? null;
 $id = $_GET['id'] ?? null;
 $csheet = $_GET['csheet'] ?? null;
 $isheet = $_GET['isheet'] ?? null;
-$db = $_GET['DB'] ?? null;
-$rc = $_GET['RC'] ?? null;
+$db = isset($_GET['DB']) && $_GET['DB'] === 'true';
+$rc = isset($_GET['RC']) && $_GET['RC'] === 'true';
 
 if (!$config || !$id) {
     echo "Placeholder for instructions\n";
@@ -126,7 +126,15 @@ $idData = false;
 if (strlen($config) === 86) {
     $configData = fetchGoogleDocsData($config);
 } elseif (strlen($config) === 44) {
-    $configData = fetchGoogleSheetsData($config, $csheet, $apiKey);
+    if (!$csheet) {
+        $csheet = fetchGoogleSheetsData($config, $apiKey);
+        if ($csheet === false) {
+            echo "Failed to retrieve the sheet name for config.\n";
+            exit;
+        }
+        $missingSheet = true;
+    }
+    $configData = fetchSheetValues($config, $csheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('config')\n";
@@ -137,7 +145,15 @@ if (strlen($config) === 86) {
 if (strlen($id) === 86) {
     $idData = fetchGoogleDocsData($id);
 } elseif (strlen($id) === 44) {
-    $idData = fetchGoogleSheetsData($id, $isheet, $apiKey);
+    if (!$isheet) {
+        $isheet = fetchGoogleSheetsData($id, $apiKey);
+        if ($isheet === false) {
+            echo "Failed to retrieve the sheet name for id.\n";
+            exit;
+        }
+        $missingSheet = true;
+    }
+    $idData = fetchSheetValues($id, $isheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('id')\n";
@@ -153,15 +169,6 @@ if ($db) {
 if ($rc) {
     if ($configData) echo "// RC:lookup : " . json_encode($configData) . "\n";
     if ($idData) echo "// RC:lookup : " . json_encode($idData) . "\n";
-}
-
-if (is_array($configData) && isset($configData['missing_sheet'])) {
-    $missingSheet = true;
-    $configData = fetchSheetValues($config, $csheet, $apiKey);
-}
-if (is_array($idData) && isset($idData['missing_sheet'])) {
-    $missingSheet = true;
-    $idData = fetchSheetValues($id, $isheet, $apiKey);
 }
 
 list($spreadsheetIDs, $groups, $groupData) = processConfigData($configData);
