@@ -7,33 +7,54 @@ function getEnvVar($var) {
 
 function fetchGoogleDocsData($identifier) {
     $url = "https://docs.google.com/spreadsheets/d/e/$identifier/pub?output=csv";
-    $data = file_get_contents($url);
+    $arrContextOptions = array(
+        "ssl" => array(
+            "verify_peer" => false,
+            "verify_peer_name" => false,
+        ),
+    );
+    $data = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $responseCode = $http_response_header[0] ?? 'No response code';
     if ($data === false) {
-        return [false, $url];
+        return [false, $url, $responseCode];
     }
-    return [$data, $url];
+    return [$data, $url, $responseCode];
 }
 
 function fetchGoogleSheetsData($identifier, $apiKey) {
     $url = "https://sheets.googleapis.com/v4/spreadsheets/$identifier?key=$apiKey";
-    $jsonResponse = file_get_contents($url);
+    $arrContextOptions = array(
+        "ssl" => array(
+            "verify_peer" => false,
+            "verify_peer_name" => false,
+        ),
+    );
+    $jsonResponse = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $responseCode = $http_response_header[0] ?? 'No response code';
     if ($jsonResponse === false) {
-        return [false, $url];
+        return [false, $url, $responseCode];
     }
     $json = json_decode($jsonResponse, true);
     if (isset($json['sheets'][0]['properties']['title'])) {
-        return [$json['sheets'][0]['properties']['title'], $url];
+        return [$json['sheets'][0]['properties']['title'], $url, $responseCode];
     }
-    return [false, $url];
+    return [false, $url, $responseCode];
 }
 
 function fetchSheetValues($identifier, $sheet, $apiKey) {
     $url = "https://sheets.googleapis.com/v4/spreadsheets/$identifier/values/$sheet?key=$apiKey";
-    $data = file_get_contents($url);
+    $arrContextOptions = array(
+        "ssl" => array(
+            "verify_peer" => false,
+            "verify_peer_name" => false,
+        ),
+    );
+    $data = file_get_contents($url, false, stream_context_create($arrContextOptions));
+    $responseCode = $http_response_header[0] ?? 'No response code';
     if ($data === false) {
-        return [false, $url];
+        return [false, $url, $responseCode];
     }
-    return [$data, $url];
+    return [$data, $url, $responseCode];
 }
 
 function processConfigData($data) {
@@ -124,19 +145,21 @@ $configData = false;
 $idData = false;
 $configUrl = '';
 $idUrl = '';
+$configResponseCode = '';
+$idResponseCode = '';
 
 if (strlen($config) === 86) {
-    list($configData, $configUrl) = fetchGoogleDocsData($config);
+    list($configData, $configUrl, $configResponseCode) = fetchGoogleDocsData($config);
 } elseif (strlen($config) === 44) {
     if (!$csheet) {
-        list($csheet, $configUrl) = fetchGoogleSheetsData($config, $apiKey);
+        list($csheet, $configUrl, $configResponseCode) = fetchGoogleSheetsData($config, $apiKey);
         if ($csheet === false) {
             echo "Failed to retrieve the sheet name for config.\n";
             exit;
         }
         $missingSheet = true;
     }
-    list($configData, $configUrl) = fetchSheetValues($config, $csheet, $apiKey);
+    list($configData, $configUrl, $configResponseCode) = fetchSheetValues($config, $csheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('config')\n";
@@ -145,17 +168,17 @@ if (strlen($config) === 86) {
 }
 
 if (strlen($id) === 86) {
-    list($idData, $idUrl) = fetchGoogleDocsData($id);
+    list($idData, $idUrl, $idResponseCode) = fetchGoogleDocsData($id);
 } elseif (strlen($id) === 44) {
     if (!$isheet) {
-        list($isheet, $idUrl) = fetchGoogleSheetsData($id, $apiKey);
+        list($isheet, $idUrl, $idResponseCode) = fetchGoogleSheetsData($id, $apiKey);
         if ($isheet === false) {
             echo "Failed to retrieve the sheet name for id.\n";
             exit;
         }
         $missingSheet = true;
     }
-    list($idData, $idUrl) = fetchSheetValues($id, $isheet, $apiKey);
+    list($idData, $idUrl, $idResponseCode) = fetchSheetValues($id, $isheet, $apiKey);
 } else {
     if ($db) {
         echo "// Invalid doc ID supplied ('id')\n";
@@ -169,8 +192,8 @@ if ($db) {
 }
 
 if ($rc) {
-    if ($configData) echo "// RC:lookup : " . json_encode($configData) . "\n";
-    if ($idData) echo "// RC:lookup : " . json_encode($idData) . "\n";
+    if ($configResponseCode) echo "// RC:lookup : $configResponseCode\n";
+    if ($idResponseCode) echo "// RC:lookup : $idResponseCode\n";
 }
 
 list($spreadsheetIDs, $groups, $groupData) = processConfigData($configData);
