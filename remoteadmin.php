@@ -18,8 +18,7 @@ function fetchGoogleDocsData($identifier) {
     if ($data === false) {
         return [false, $url, $responseCode];
     }
-    var_dump($data);
-    return [$data, $url, $responseCode];
+    return [$data['values'], $url, $responseCode];
 }
 
 function fetchGoogleSheetsData($identifier, $apiKey) {
@@ -55,8 +54,7 @@ function fetchSheetValues($identifier, $sheet, $apiKey) {
     if ($data === false) {
         return [false, $url, $responseCode];
     }
-    var_dump($data);
-    return [$data, $url, $responseCode];
+    return [$data['values'], $url, $responseCode];
 }
 
 function processConfigData($data) {
