@@ -69,13 +69,12 @@ function fetchSheetValues($identifier, $sheet, $apiKey) {
 }
 
 function processConfigData($data, $id) {
-    $lines = explode("\n", $data);
-    array_shift($lines); // Remove the first line (headings)
+    array_shift($data); // Remove the first line (headings)
     $spreadsheetIDs = [];
     $groups = [];
     $groupData = '';
 
-    foreach ($lines as $line) {
+    foreach ($data as $line) {
         if($id === $line[0]) {
             $line = str_getcsv($line);
             if (count($line) < 3) continue;
@@ -89,8 +88,7 @@ function processConfigData($data, $id) {
 }
 
 function processIDData($data, $groups) {
-    $lines = explode("\n", $data);
-    $firstLine = str_getcsv(array_shift($lines));
+    $firstLine = str_getcsv(array_shift($data));
     $indexes = [
         'clan' => 0,
         'username' => 1,
@@ -110,7 +108,7 @@ function processIDData($data, $groups) {
     $failedCount = 0;
     $failedLineNos = [];
 
-    foreach ($lines as $lineNumber => $line) {
+    foreach ($data as $lineNumber => $line) {
         $line = str_getcsv($line);
         if (!isset($line[$indexes['steamid']]) || !is_numeric($line[$indexes['steamid']]) || strpos($line[$indexes['steamid']], '7656') !== 0) {
             $failedLineNos[] = $lineNumber + 2;
