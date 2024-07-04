@@ -74,21 +74,19 @@ function processConfigData($data, $id) {
     $groups = [];
     $groupData = '';
 
-    foreach ($data as $line) {
+    foreach ($data as $number => $line) {
         if($id === $line[0]) {
-            $line = str_getcsv($line);
             if (count($line) < 3) continue;
-            $spreadsheetIDs[] = trim($line[0]);
+            // $spreadsheetIDs[] = trim($line[0]);
             $groups[] = trim($line[1]);
             $groupData .= "Group=" . trim($line[1]) . ":" . trim($line[2]) . "\n";
         }
     }
-
-    return [$spreadsheetIDs, $groups, $groupData];
+    return [$groups, $groupData];
 }
 
 function processIDData($data, $groups) {
-    $firstLine = str_getcsv(array_shift($data));
+    $firstLine = array_shift($data);
     $indexes = [
         'clan' => 0,
         'username' => 1,
@@ -109,18 +107,23 @@ function processIDData($data, $groups) {
     $failedLineNos = [];
 
     foreach ($data as $lineNumber => $line) {
-        $line = str_getcsv($line);
         if (!isset($line[$indexes['steamid']]) || !is_numeric($line[$indexes['steamid']]) || strpos($line[$indexes['steamid']], '7656') !== 0) {
             $failedLineNos[] = $lineNumber + 2;
             $failedCount++;
             continue;
         }
-        if (!in_array($line[$indexes['group']], $groups)) {
+        if (!in_array(trim($line[$indexes['group']]), $groups)) {
             $failedLineNos[] = $lineNumber + 2;
             $failedCount++;
             continue;
         }
-        $userData .= "Admin=" . trim($line[$indexes['steamid']]) . ":" . trim($line[$indexes['group']]) . " // " . trim($line[$indexes['clan']]) . " - " . trim($line[$indexes['username']]) . "\n";
+        // $userData .= "Admin=" . trim($line[$indexes['steamid']]) . ":" . trim($line[$indexes['group']]) . " // " . trim($line[$indexes['clan']]) . " - " . trim($line[$indexes['username']]) . "\n";
+        $userData .= "Admin=" . trim($line[$indexes['steamid']]) . ":" . trim($line[$indexes['group']]) . " // ";
+        $Clan = trim($line[$indexes['clan']]);
+        if(!empty($Clan)) {
+            $userData .= trim($line[$indexes['clan']]) . " - ";
+        }
+        $userData .= trim($line[$indexes['username']]) . "\n";
         $adminCount++;
     }
 
@@ -132,8 +135,13 @@ function outputResults($adminCount, $failedCount, $failedLineNos, $groupData, $u
         echo "// Use this URL next time. It's faster:\n";
         echo "// " . $betterurl . "\n";
     }
-    echo "// $adminCount admins loaded (Total: " . ($adminCount + $failedCount) . "). ($failedCount failed - failed line numbers (" . implode(",", $failedLineNos) . "))\n";
+    echo "// $adminCount admins loaded (Total: " . ($adminCount + $failedCount) . "). ($failedCount failed";
+    if($failedLineNos) {
+        echo " - failed line numbers (" . implode(",", $failedLineNos) . ")";
+    }
+    echo ")\n";
     echo $groupData;
+    echo "\n";
     echo $userData;
 }
 
@@ -196,20 +204,18 @@ if (strlen($id) === 86) {
     }
     exit;
 }
-var_dump($configData);
-var_dump($idData);
 
 if ($db) {
-    if ($configUrl) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", $configUrl) . "\n";
-    if ($idUrl) echo "// DB:lookup : " . str_replace($apiKey, "YOUR_API_KEY", $idUrl) . "\n";
+    if ($configUrl) echo "// DB:config : " . str_replace($apiKey, "YOUR_API_KEY", $configUrl) . "\n";
+    if ($idUrl) echo "// DB:id     : " . str_replace($apiKey, "YOUR_API_KEY", $idUrl) . "\n";
 }
 
 if ($rc) {
-    if ($configResponseCode) echo "// RC:lookup : $configResponseCode\n";
-    if ($idResponseCode) echo "// RC:lookup : $idResponseCode\n";
+    if ($configResponseCode) echo "// RC:config : $configResponseCode\n";
+    if ($idResponseCode) echo "// RC:id     : $idResponseCode\n";
 }
 
-list($spreadsheetIDs, $groups, $groupData) = processConfigData($configData, $id);
+list($groups, $groupData) = processConfigData($configData, $id);
 list($userData, $adminCount, $failedCount, $failedLineNos) = processIDData($idData, $groups);
 
 if ($missingSheet) {
