@@ -137,7 +137,7 @@ function outputResults($adminCount, $failedCount, $failedLineNos, $groupData, $u
     }
     echo "// $adminCount admins loaded (Total: " . ($adminCount + $failedCount) . "). (Failed: $failedCount";
     if($failedLineNos) {
-        echo " " . " - failed line numbers (" . implode(",", $failedLineNos) . ")";
+        echo " - failed line numbers (" . implode(",", $failedLineNos) . ")";
     }
     echo ")\n";
     echo $groupData;
