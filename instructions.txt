@@ -1,0 +1,97 @@
+You're missing one or both of the parameters.....
+
+The remoteadminlist.com is a free to use tool for Squad and Post Scriptum that translates your google sheets into remote admin lists.
+These can then be entered into your servers RemoteAdminListHost.cfg files.
+
+
+
+
+****************************************UPDATED PLEASE READ****************************************
+
+Following an update from Google the original endpoint used by this tool was retired.
+https://spreadsheets.google.com/feeds/list/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/1/public/values?alt=json
+The tool has been rewritten and that means some changes for the URL, Config Sheet, IDs or Permissions.
+
+There are two endpoints you can use that have slightly different requirements:
+
+***************************************************************************************************
+
+1. Via the API - this method uses the original Google Sheet ID used all along. 
+
+If you've used this all along then the only change you need to make now is in the Share permissions:
+-In the top right in Google Sheets select Share
+-At the bottom of the Share window under Get a Link select Change
+-Set this option to 'Anyone on the Internet with this link can view'
+-Two optional additional parameters have been provided for the sheet names (config = csheet / id = isheet)
+
+https://docs.google.com/spreadsheets/d/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/edit#gid=0
+https://docs.google.com/spreadsheets/d/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/edit#gid=0
+https://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A&id=1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA&csheet=Sheet1&isheet=Sheet1
+
+***************************************************************************************************
+
+2. Via the 'Published to the web' endpoints. - this method uses the orignal share permissions.
+
+If you've used this for some time the only change you need to make is to the IDs (URL & Config Sheet)
+-In the File menu select 'Publish to the Web'
+-Ensure the Google Sheet is Published.
+-In the Link provided select the ID between 'https://docs.google.com/spreadsheets/d/e/' and '/pubhtml'
+-For the ID sheet ensure you update the first column of the config sheet with the new ID
+
+https://docs.google.com/spreadsheets/d/e/2PACX-1vRNUOdGKLRRmEJ1mQ-4MTJ-BekMj-zjDApoB3U6EeP9XlzYT8gDJcHgX7qSnu7miycrYLQhENyErLx8/pubhtml
+https://docs.google.com/spreadsheets/d/e/2PACX-1vSslC7T6YSx1XxoEq2pxZp6RWCDis4Cc7gFtCpHm6eiVj87CV25ElpV8KjpY8tMj4gcTPD0z8aMcN7D/pubhtml
+http://remoteadminlist.com/remoteadmin.php?config=2PACX-1vRNUOdGKLRRmEJ1mQ-4MTJ-BekMj-zjDApoB3U6EeP9XlzYT8gDJcHgX7qSnu7miycrYLQhENyErLx8&id=2PACX-1vSslC7T6YSx1XxoEq2pxZp6RWCDis4Cc7gFtCpHm6eiVj87CV25ElpV8KjpY8tMj4gcTPD0z8aMcN7D
+
+****************************************UPDATED PLEASE READ****************************************
+
+
+
+
+
+
+The php script takes 2 GET parameters (referenced in the URL), config and id, referring to 2 Google Sheets. e.g.
+http://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A&id=1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA
+Contains 2 GET parameters
+1. a Config parameter:
+1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A
+2. and an ID parameter:
+1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA
+
+Therefore you will need 2 corresponding Google Sheets:
+
+1. The Config Sheet - This sheet holds the settings for the way the users defined in the ID Google Sheet will be mapped into roles in the RemoteAdminList.
+https://docs.google.com/spreadsheets/d/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/edit#gid=0
+It contains 4 columns:
+-the reference of the ID spreadsheet these roles will be applied to
+-the role group name
+-the access permissions granted to the role group https://squad.gamepedia.com/Server_Administration
+-a free text field to remind you what the sheet is (usually the title of the ID sheet)
+
+2. The ID Sheet - This sheet contains a list of the users that will be mapped to the roles defined in the corresponding Config Google Sheet.
+https://docs.google.com/spreadsheets/d/1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA/edit#gid=0
+It also contains 4 columns:
+-users clan
+-users name
+-users group (must be correspond to the group defined in the Config Google Sheet)
+-users steam id (starting 7656...)
+
+IMPORTANT
+1. Once you have drafted these Google Sheets you need to publish them (Go to the 'File' menu and click on 'Publish to the Web').
+If you do not then the permissions will restrict the php script being able to extract the information in your Google Sheets.
+This does not affect edit rights which can be defined as per usual in Google Sheets. 
+2. The reference of the ID sheet must be added to the Config Google Sheet next to the role groups created in relation to it.
+You can have one master Config Google Sheet for multiple ID Google Sheets.
+
+This is a great way to get users to add permissions for themselves for one off events (such as one life events)
+as you can control what permissions they are allowed to assign themselves to. It's also a great way to provide whitelists
+and admin permissions to partner and stakeholder clans in your servers so that they can add new members and remove old members
+without asking the server owner every time.
+
+It's free to use and there's a second version hosted at:
+http://internetthingy.co.uk/remoteadmin.php
+If you which to host a version yourself you can download it from GitHub.
+
+http://remoteadminlist.com/remoteadmin.php
+https://docs.google.com/spreadsheets/d/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/edit#gid=0
+https://docs.google.com/spreadsheets/d/1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA/edit#gid=0
+http://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A&id=1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA

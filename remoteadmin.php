@@ -20,11 +20,10 @@ function fetchGoogleDocsData($identifier) {
     }
     if(strstr($response, PHP_EOL)) {
         $SplitByLine = explode(PHP_EOL, $response);
-        foreach( $SplitByLine as $number => $Line ) {
+        foreach($SplitByLine as $number => $Line) {
             if(strstr($Line, ',')) {
-                $data[] = str_getcsv( $Line, ",", '"');
+                $data[] = str_getcsv($Line, ",", '"');
             }
-            
         }
     }
     return [$data, $url, $responseCode];
@@ -60,7 +59,7 @@ function fetchSheetValues($identifier, $sheet, $apiKey) {
     );
     $response = file_get_contents($url, false, stream_context_create($arrContextOptions));
     $responseCode = $http_response_header[0] ?? 'No response code';
-    if ($data === false) {
+    if ($response === false) {
         return [false, $url, $responseCode];
     }
     $rawJSON = json_decode($response, true);
@@ -145,6 +144,15 @@ function outputResults($adminCount, $failedCount, $failedLineNos, $groupData, $u
     echo $userData;
 }
 
+function displayInstructions() {
+    $instructionsPath = __DIR__ . '/../instructions.txt';  // Adjust the path as needed
+    if (file_exists($instructionsPath)) {
+        echo file_get_contents($instructionsPath);
+    } else {
+        echo "Instructions file is missing.\n";
+    }
+}
+
 $config = $_GET['config'] ?? null;
 $id = $_GET['id'] ?? null;
 $csheet = $_GET['csheet'] ?? null;
@@ -153,7 +161,7 @@ $db = isset($_GET['DB']) && $_GET['DB'] === 'true';
 $rc = isset($_GET['RC']) && $_GET['RC'] === 'true';
 
 if (!$config || !$id) {
-    echo "Placeholder for instructions\n";
+    displayInstructions();
     exit;
 }
 
