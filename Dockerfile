@@ -27,6 +27,7 @@ RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 #COPY index.php /usr/share/nginx/html/
 COPY remoteadmin.php /usr/share/nginx/html/
 COPY instructions.txt /usr/share/nginx/
+COPY instructions_no_api.txt /usr/share/nginx/
 
 # Ensure PHP-FPM is running as a service
 COPY start.sh /start.sh

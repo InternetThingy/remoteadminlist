@@ -8,26 +8,9 @@ These can then be entered into your server's RemoteAdminListHost.cfg files.
 Following an update from Google, the original endpoint used by this tool was retired.
 The tool has been rewritten, resulting in changes to the URL, Config Sheet, IDs, or Permissions.
 
-There are two endpoints you can use that have slightly different requirements:
-
 ***************************************************************************************************
 
-1. Via the API:
-- This method uses the original Google Sheet ID.
-- Change the Share permissions:
-  - In Google Sheets, select Share.
-  - Under Get a Link, select Change.
-  - Set to 'Anyone on the Internet with this link can view'.
-- Optional parameters for sheet names (config = csheet / id = isheet).
-
-Example URLs:
-https://docs.google.com/spreadsheets/d/1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A/edit#gid=0
-https://docs.google.com/spreadsheets/d/1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA/edit#gid=0
-https://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A&id=1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA&csheet=Sheet1&isheet=Sheet1
-
-***************************************************************************************************
-
-2. Via the 'Published to the web' endpoints:
+Via the 'Published to the web' endpoints:
 - Uses original share permissions.
 - Change the IDs (URL & Config Sheet):
   - In the File menu, select 'Publish to the Web'.
@@ -37,13 +20,12 @@ https://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7B
 
 Example URLs:
 https://docs.google.com/spreadsheets/d/e/2PACX-1vRNUOdGKLRRmEJ1mQ-4MTJ-BekMj-zjDApoB3U6EeP9XlzYT8gDJcHgX7qSnu7miycrYLQhENyErLx8/pubhtml
-https://docs.google.com/spreadsheets/d/e/2PACX-1vSslC7T6YSx1XxoEq2pxZp6RWCDis4Cc7gFtCpHm6eiVj87CV25ElpV8KjpY8tMj4gcTPD0z8aMcN7D/pubhtml
 http://remoteadminlist.com/remoteadmin.php?config=2PACX-1vRNUOdGKLRRmEJ1mQ-4MTJ-BekMj-zjDApoB3U6EeP9XlzYT8gDJcHgX7qSnu7miycrYLQhENyErLx8&id=2PACX-1vSslC7T6YSx1XxoEq2pxZp6RWCDis4Cc7gFtCpHm6eiVj87CV25ElpV8KjpY8tMj4gcTPD0z8aMcN7D
 
 ****************************************UPDATED PLEASE READ****************************************
 
 The PHP script takes 2 GET parameters (config and id) referring to 2 Google Sheets, e.g.
-http://remoteadminlist.com/remoteadmin.php?config=1_6RcFNbPNaZ2jViKAV3dMfc-Jx7BqPS-uaawq7JEb4A&id=1MUTPM3KIIVkHdkgbEwlTwxY7TMPidKZ66MsebjY-HSA
+http://remoteadminlist.com/remoteadmin.php?config=2PACX-1vRNUOdGKLRRmEJ1mQ-4MTJ-BekMj-zjDApoB3U6EeP9XlzYT8gDJcHgX7qSnu7miycrYLQhENyErLx8&id=2PACX-1vSslC7T6YSx1XxoEq2pxZp6RWCDis4Cc7gFtCpHm6eiVj87CV25ElpV8KjpY8tMj4gcTPD0z8aMcN7D
 
 Two corresponding Google Sheets are needed:
 1. The Config Sheet:

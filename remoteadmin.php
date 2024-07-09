@@ -144,8 +144,8 @@ function outputResults($adminCount, $failedCount, $failedLineNos, $groupData, $u
     echo $userData;
 }
 
-function displayInstructions() {
-    $instructionsPath = __DIR__ . '/../instructions.txt';  // Adjust the path as needed
+function displayInstructions($apiKeyPresent) {
+    $instructionsPath = $apiKeyPresent ? __DIR__ . '/../instructions.txt' : __DIR__ . '/../instructions_no_api.txt';
     if (file_exists($instructionsPath)) {
         echo file_get_contents($instructionsPath);
     } else {
@@ -160,12 +160,14 @@ $isheet = $_GET['isheet'] ?? null;
 $db = isset($_GET['DB']) && $_GET['DB'] === 'true';
 $rc = isset($_GET['RC']) && $_GET['RC'] === 'true';
 
+$apiKey = getEnvVar('API_KEY');
+$apiKeyPresent = !empty($apiKey);
+
 if (!$config || !$id) {
-    displayInstructions();
+    displayInstructions($apiKeyPresent);
     exit;
 }
 
-$apiKey = getEnvVar('API_KEY');
 $missingSheet = false;
 
 $configData = false;
@@ -177,7 +179,7 @@ $idResponseCode = '';
 
 if (strlen($config) === 86) {
     list($configData, $configUrl, $configResponseCode) = fetchGoogleDocsData($config);
-} elseif (strlen($config) === 44) {
+} elseif ($apiKeyPresent && strlen($config) === 44) {
     if (!$csheet) {
         list($csheet, $configUrl, $configResponseCode) = fetchGoogleSheetsData($config, $apiKey);
         if ($csheet === false) {
@@ -196,7 +198,7 @@ if (strlen($config) === 86) {
 
 if (strlen($id) === 86) {
     list($idData, $idUrl, $idResponseCode) = fetchGoogleDocsData($id);
-} elseif (strlen($id) === 44) {
+} elseif ($apiKeyPresent && strlen($id) === 44) {
     if (!$isheet) {
         list($isheet, $idUrl, $idResponseCode) = fetchGoogleSheetsData($id, $apiKey);
         if ($isheet === false) {
