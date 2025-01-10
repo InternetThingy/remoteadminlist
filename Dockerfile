@@ -1,10 +1,14 @@
-# Use the official Debian image as a base image
+# Use a specific Debian image tag to avoid uncontrolled updates
 FROM debian:latest
 
-# Install Nginx, PHP, PHP-FPM, and Nano
+# Set a non-root user for the container
+RUN useradd -m -s /bin/bash webral
+
+# Install Nginx, PHP, PHP-FPM, and Nano with minimal packages and cleaning up afterwards
 RUN apt-get update && \
-    apt-get install -y nginx php8.2-fpm nano && \
-    apt-get clean
+    apt-get install -y --no-install-recommends nginx php8.2-fpm nano && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Ensure PHP-FPM is using the correct socket path
 RUN sed -i 's|^listen = .*$|listen = /var/run/php-fpm.sock|' /etc/php/8.2/fpm/pool.d/www.conf
@@ -23,8 +27,7 @@ RUN rm /etc/nginx/sites-enabled/default
 COPY nginx.conf /etc/nginx/sites-available/default
 RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
-# Copy the PHP file into the web directory
-#COPY index.php /usr/share/nginx/html/
+# Copy the PHP and supporting files into the container
 COPY remoteadmin.php /usr/share/nginx/html/
 COPY instructions.txt /usr/share/nginx/
 COPY instructions_no_api.txt /usr/share/nginx/
@@ -33,8 +36,17 @@ COPY instructions_no_api.txt /usr/share/nginx/
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
+# Change ownership of application files to the non-root user
+RUN chown -R webral:webral /usr/share/nginx/html /usr/share/nginx
+
+# Switch to non-root user
+USER webral
+
 # Expose port 80 to the host
 EXPOSE 80
+
+# Add a HEALTHCHECK to verify the Nginx service is running
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 CMD curl --fail http://localhost || exit 1
 
 # Start services
 CMD ["/start.sh"]
