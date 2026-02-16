@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Start PHP-FPM
-php-fpm8.2 &
+php-fpm8.4 &
 
 # Ensure the socket directory has the correct permissions
 chown -R www-data:www-data /var/run/php

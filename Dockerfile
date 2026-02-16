@@ -3,14 +3,14 @@ FROM debian:latest
 
 # Install Nginx, PHP, PHP-FPM, and Nano
 RUN apt-get update && \
-    apt-get install -y nginx php8.2-fpm nano && \
+    apt-get install -y nginx php8.4-fpm nano && \
     apt-get clean
 
 # Ensure PHP-FPM is using the correct socket path
-RUN sed -i 's|^listen = .*$|listen = /var/run/php-fpm.sock|' /etc/php/8.2/fpm/pool.d/www.conf
+RUN sed -i 's|^listen = .*$|listen = /var/run/php-fpm.sock|' /etc/php/8.4/fpm/pool.d/www.conf
 
 # Ensure PHP-FPM passes environment variables
-RUN echo "env[API_KEY] = \$API_KEY" >> /etc/php/8.2/fpm/pool.d/www.conf
+RUN echo "env[API_KEY] = \$API_KEY" >> /etc/php/8.4/fpm/pool.d/www.conf
 
 # Ensure the socket directory has the correct permissions
 RUN mkdir -p /var/run/php && \
