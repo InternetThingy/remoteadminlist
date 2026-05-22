@@ -3,7 +3,7 @@ FROM debian:latest
 
 # Install Nginx, PHP, PHP-FPM, and Nano
 RUN apt-get update && \
-    apt-get install -y nginx php8.4-fpm nano && \
+    apt-get install -y nginx php8.4-fpm && \
     apt-get clean
 
 # Ensure PHP-FPM is using the correct socket path
