@@ -1,10 +1,13 @@
 # Use the official Debian image as a base image
-FROM debian:latest
+FROM debian:13-slim
 
-# Install Nginx, PHP, PHP-FPM, and Nano
+# Install Nginx, PHP and PHP-FPM and clean up the apt cache to reduce the image size
 RUN apt-get update && \
-    apt-get install -y nginx php8.4-fpm && \
-    apt-get clean
+    apt-get install -y --no-install-recommends \
+      nginx \
+      php8.4-fpm && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Ensure PHP-FPM is using the correct socket path
 RUN sed -i 's|^listen = .*$|listen = /var/run/php-fpm.sock|' /etc/php/8.4/fpm/pool.d/www.conf
